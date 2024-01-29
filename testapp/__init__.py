@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from .models.employee import db
+from .models.db import db
 
 app = Flask(__name__)
 app.config.from_object('testapp.config')
