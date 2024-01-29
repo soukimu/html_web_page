@@ -1,5 +1,5 @@
-from testapp import db
 from datetime import datetime
+from .db import db
 
 
 class Employee(db.Model):

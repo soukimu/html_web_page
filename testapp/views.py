@@ -1,8 +1,8 @@
-from testapp import app
 from flask import render_template, request, redirect, url_for
-from random import randint
-from testapp import db
+from testapp.models.db import db
 from testapp.models.employee import Employee
+from testapp import app
+
 
 
 @app.get('/')
