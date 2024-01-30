@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>抽選ページ</title>
+</head>
+<body>
+    <!-- 抽選ボタン -->
+    <form action="/lottery" method="post">
+        <input type="hidden" name="user_id" value="{{ current_user_id }}"> <!-- ログインユーザーのID -->
+        <button type="submit">抽選する</button>
+    </form>
+</body>
+</html>

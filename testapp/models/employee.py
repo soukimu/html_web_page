@@ -12,3 +12,4 @@ class Employee(db.Model):
     year = db.Column(db.Integer, default=0)  # 社歴
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)  # 作成日時
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)  # 更新日時
+
