@@ -1,10 +1,11 @@
-from flask import render_template, request, redirect, url_for
-from testapp.models.db import db
-from testapp.models.employee import Employee
-from testapp.models.participants import Pairing, Participant
+from flask import render_template, request, redirect, url_for, jsonify, abort
+from testapp.entity.db import db
+from testapp.entity.employee import Employee
+from testapp.entity.pairs import Pairing
+from testapp.entity.users import User
+from testapp.entity.has_sent import HasSent
 from testapp import app
 import random
-from json import jsonify
 
 
 
@@ -71,33 +72,67 @@ def employee_delete(id):
     db.session.commit()  
     return redirect(url_for('employee_list'))
 
+@app.get('login')
+def get_login_page():
+    return render_template('testapp/login.html')
+
+@app.post('/login')
+def post_user():
+    name = request.form.get('name')
+    mail = request.form.get('mail')
+    current_user = User.query.filter_by(name=name).first()
+    if not current_user.mail:
+        current_user.mail = mail
+        db.session.commit()    
+        return redirect(url_for('get_status', current_user_id=current_user.id))
+    elif current_user.mail != mail:
+        return render_template('testapp/login.html')
+
+@app.get('/top')
+def get_status():
+    user_id = request.json.get('user_id')
+    if user_id is not None:
+        # Userテーブルからuser_idが一致するレコードを取得
+        user = User.query.filter_by(id=user_id).first()
+        
+        # HasSentテーブルからuser_idが一致するレコードを取得
+        has_sent = HasSent.query.filter_by(user_id=user_id).first()
+        
+        if user:
+            # userデータとhas_sentデータをレスポンスとして返す
+            response_data = {
+                'user_id': user.id,
+                'name': user.name,
+                'has_pair': user.has_pair,
+                'has_sent': has_sent is not None  # has_sentレコードが存在するかどうか
+            }
+            return render_template('testapp/top.html', response_data=response_data)
+        
 
 @app.get('/lottery')
-def get_lottery():
-    return render_template('testapp/lottery.html')
+def get_lottery_page():
+    current_user_id = request.form.get('user_id')  # フォームデータからログインユーザーのIDを取得
+    current_user = User.query.get(current_user_id)
+    
+    if current_user.has_pair:
+        return redirect(url_for('get_lottery_result', current_user_id=current_user_id))
+    return render_template('testapp/lottery.html', current_user_id=current_user_id)
+
 
 @app.post('/lottery')
-def post_result():
+def post_lottery_result():
     current_user_id = request.form.get('user_id')  # フォームデータからログインユーザーのIDを取得
-    current_user = Participant.query.get(current_user_id)
-    
-    # ログインユーザーが存在しない、またはすでにペアがいる場合、indexページにリダイレクト
-    if not current_user or current_user.has_pair:
-        return redirect(url_for('index'))
+    current_user = User.query.get(current_user_id)
     
     # ログインユーザーの性別に基づいて異性を探す
     target_gender = 'F' if current_user.gender == 'M' else 'M'
-    available_partners = Participant.query.filter_by(gender=target_gender, has_pair=False).all()
-    
-    # 異性がいない場合、エラーを返す
-    if not available_partners:
-        return jsonify({'error': 'No available partners'}), 400
+    available_partners = User.query.filter_by(gender=target_gender, has_pair=False).all()
     
     # ランダムに異性を選ぶ
     partner = random.choice(available_partners)
     
     # ペアをデータベースに保存
-    new_pairing = Pairing(giver_id=current_user.id, taker_id=partner.id)
+    new_pairing = Pairing(giver_id=current_user.id, receiver_id=partner.id)
     db.session.add(new_pairing)
     
     # 選ばれた参加者の has_pair を更新
@@ -106,19 +141,24 @@ def post_result():
     db.session.commit()
 
     # ペアをリザルトページに渡す
-    return redirect(url_for('result', partner_name=partner.name))
+    return redirect(url_for('get_lottery_result', current_user_id=current_user.id))
 
-@app.route('/result')
-def result():
-    current_user_id = request.form.get('user_id')  # フォームデータからログインユーザーのIDを取得
-    current_user = Participant.query.get(current_user_id)
+@app.get('/result')
+def get_lottery_result():
+    current_user_id = request.args.get('current_user_id')  # URLのクエリパラメータからcurrent_user_idを取得
+    # Pairingテーブルからcurrent_user_idをgiver_idとして持つレコードを検索
+    pairing = Pairing.query.get(Pairing.giver_id == current_user_id)
     
-    if not current_user.has_pair:
-        return redirect(url_for('lottery'))
-        
-    # セッションからペア情報を取得
-    pair_info = session.pop('pair_info', None)
-    if pair_info:
-        return render_template('result.html', male=pair_info['male'], female=pair_info['female'])
-    else:
-        return redirect(url_for('index'))  # ペア情報がない場合、indexにリダイレクト
+    if not pairing:
+        # ペアリングが見つからない場合
+        return render_template('error.html', message='Pairing not found')
+
+    # current_user_idがgiverならreceiverを取得、receiverならgiverを取得
+    pair_user = User.query.get(pairing.receiver_id)
+    
+    if not pair_user:
+        # 対応するペアのユーザーが見つからない場合
+        return render_template('error.html', message='Pair user not found')
+    
+    # 対応するペアのユーザーのnameとlikeを返却
+    return render_template('result.html', name=pair_user.name, like=pair_user.like)

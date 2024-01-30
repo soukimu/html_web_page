@@ -1,13 +1,16 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from .models.db import db
+from .entity.db import db
 
 app = Flask(__name__)
 app.config.from_object('testapp.config')
 db.init_app(app)
 migrate = Migrate(app, db)
 
-from .models import employee
+from .entity import employee
+from.entity import pairs
+from.entity import users
+from.entity import has_sent
 
 import testapp.views
