@@ -4,9 +4,8 @@ from testapp.entity.employee import Employee
 from testapp.entity.pairs import Pairing
 from testapp.entity.users import User
 from testapp.entity.has_sent import HasSent
-from testapp import app
+from app import app
 import random
-
 
 
 @app.get('/')
@@ -72,7 +71,7 @@ def employee_delete(id):
     db.session.commit()  
     return redirect(url_for('employee_list'))
 
-@app.get('login')
+@app.get('/login')
 def get_login_page():
     return render_template('testapp/login.html')
 
@@ -84,9 +83,9 @@ def post_user():
     if not current_user.mail:
         current_user.mail = mail
         db.session.commit()    
-        return redirect(url_for('get_status', current_user_id=current_user.id))
     elif current_user.mail != mail:
-        return render_template('testapp/login.html')
+        return render_template('testapp/login.html', error='メールアドレスが一致しません')
+    return redirect(url_for('get_status', current_user_id=current_user.id))
 
 @app.get('/top')
 def get_status():
