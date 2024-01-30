@@ -4,7 +4,7 @@ from testapp.entity.employee import Employee
 from testapp.entity.pairs import Pairing
 from testapp.entity.users import User
 from testapp.entity.has_sent import HasSent
-from app import app
+from testapp import app
 import random
 
 

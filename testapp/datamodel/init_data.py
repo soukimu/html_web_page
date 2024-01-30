@@ -1,14 +1,15 @@
+# testapp/datamodel/init_data.py
 import click
 from flask.cli import with_appcontext
 from sqlalchemy import text
-from testapp.entity import db  # アプリケーションのインスタンスをインポートする
-from app import app
+from .. import db  # アプリケーションのインスタンスをインポートする
 
+@click.command('init-users')
+@with_appcontext
+def init_users_command():
+    with open('testapp/datamodel/init_users.sql') as f:
+        data_sql = text(f.read())
 
-# SQLファイルの内容を読み込む
-with app.open_resource('init_users.sql') as f:
-    data_sql = text(f.read().decode('utf8'))
-
-# SQLコマンドを実行する
-db.engine.execute(data_sql)
-click.echo('Initialized the users in the database.')
+    with db.engine.connect() as connection:
+        connection.execute(data_sql)
+    click.echo('Initialized the users in the database.')
