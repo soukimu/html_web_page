@@ -10,4 +10,5 @@ INSERT INTO users (name, mail, gender, has_pair, "like") VALUES ('Ian', 'ian@exa
 INSERT INTO users (name, mail, gender, has_pair, "like") VALUES ('Julia', 'julia@example.com', 'F', false, null);
 INSERT INTO users (name, mail, gender, has_pair, "like") VALUES ('Kyle', 'kyle@example.com', 'M', false, null);
 INSERT INTO users (name, mail, gender, has_pair, "like") VALUES ('Linda', 'linda@example.com', 'F', false, null);
-UPDATE users SET has_pair = false;
+INSERT INTO users (name, mail, gender, has_pair, "like") VALUES ('Kaito', null, 'M', false, null);
+-- UPDATE users SET has_pair = false;
