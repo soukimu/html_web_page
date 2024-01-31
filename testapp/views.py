@@ -6,6 +6,7 @@ from testapp.entity.users import User
 from testapp.entity.has_sent import HasSent
 from testapp import app
 import random
+from sqlalchemy import not_, exists, and_
 
 
 @app.get('/')
@@ -109,13 +110,14 @@ def get_status(current_user_id):
         
         # HasSentテーブルからuser_idが一致するレコードを取得
         has_sent = HasSent.query.filter_by(user_id=current_user_id).first()
-        
+        # Pairingテーブルで、current_user_idがgiver_idカラムに存在するかどうかを確認
+        has_target_user = Pairing.query.filter(Pairing.giver_id == current_user_id).first() is not None
         if current_user:
             # userデータとhas_sentデータをレスポンスとして返す
             response_data = {
                 'current_user_id': current_user.id,
                 'current_user_name': current_user.name,
-                'has_pair': current_user.has_pair,
+                'has_target_user': has_target_user,
                 'has_sent': has_sent is not None  # has_sentレコードが存在するかどうか
             }
             return render_template('testapp/top.html', response_data=response_data)
@@ -127,9 +129,9 @@ def get_lottery_page(current_user_id):
     print(current_user_id)
     current_user_id = current_user_id
     print('----------------')
-    current_user = User.query.get(current_user_id)
+    has_target_user = Pairing.query.filter(Pairing.giver_id == current_user_id).first() is not None
     
-    if current_user.has_pair:
+    if has_target_user:
         return redirect(url_for('get_lottery_result', current_user_id=current_user_id))
     return render_template('testapp/lottery.html', current_user_id=current_user_id)
 
@@ -144,20 +146,26 @@ def post_lottery_result(current_user_id):
     
     # ログインユーザーの性別に基づいて異性を探す
     target_gender = 'F' if current_user.gender == 'M' else 'M'
-    available_partners = User.query.filter_by(gender=target_gender, has_pair=False).all()
+    # Pairingテーブルに存在するすべてのreceiverのidをサブクエリとして取得
+    subquery = db.session.query(Pairing.receiver_id).subquery()
+
+    # Userテーブルから、そのidが上記のサブクエリに含まれていないすべてのユーザーを取得
+    possible_targets = User.query.filter(
+        and_(
+            not_(User.id.in_(subquery)),
+            User.gender == target_gender
+        )
+    ).all()
+
     print(f'target_gender: {target_gender}')
-    print(f'available_partners: {available_partners}')
+    print(f'available_partners: {possible_targets}')
     
     # ランダムに異性を選ぶ
-    partner = random.choice(available_partners)
+    partner = random.choice(possible_targets)
     
     # ペアをデータベースに保存
     new_pairing = Pairing(giver_id=current_user.id, receiver_id=partner.id)
     db.session.add(new_pairing)
-    
-    # 選ばれた参加者の has_pair を更新
-    current_user.has_pair = True
-    partner.has_pair = True
     db.session.commit()
 
     # ペアをリザルトページに渡す
@@ -198,4 +206,18 @@ def delete_has_sent(current_user_id):
     print('----------------')
     print('delete_has_sent')
     print('----------------')
+    return redirect(url_for('get_status', current_user_id=current_user_id))
+
+@app.get('/likes/<int:current_user_id>')
+def get_likes(current_user_id):
+    likes = User.query.get(current_user_id).like
+    return render_template('testapp/like.html', current_user_id=current_user_id, likes=likes)
+
+@app.post('/likes/<int:current_user_id>/put')
+def post_likes(current_user_id):
+    user = User.query.get(current_user_id)
+    likes = request.form.get('likes')
+    user.like = likes
+    db.session.merge(user)
+    db.session.commit()
     return redirect(url_for('get_status', current_user_id=current_user_id))

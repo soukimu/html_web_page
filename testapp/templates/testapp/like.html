@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>あなたの好みを教えてね</h1>
+    <h3>あなたに渡す相手が確認するよ！</h3>
+    <form action="{{url_for('post_likes', current_user_id=current_user_id, likes=likes)}}" method="POST">
+        <textarea name="likes" >{{likes}}</textarea>
+        <button type="submit">登録する</button>
+    </form>
+</body>
+</html>
