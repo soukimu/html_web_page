@@ -78,39 +78,55 @@ def get_login_page():
 @app.post('/login')
 def post_user():
     name = request.form.get('name')
-    mail = request.form.get('mail')
-    current_user = User.query.filter_by(name=name).first()
-    if not current_user.mail:
+    mail = request.form.get('email')
+    user_by_name = User.query.filter_by(name=name).first()
+    user_by_mail = User.query.filter_by(mail=mail).first()
+    print('----------------')
+    print(f'input_name:{name}, input_mail:{mail}')
+    print('----------------')
+    is_mail_in_users = True if user_by_mail is not None else False
+    is_name_in_users = True if user_by_name is not None else False
+    if is_mail_in_users:
+        current_user = user_by_mail
+    elif is_name_in_users:
+        current_user = user_by_name
+        if user_by_name.mail:
+            return render_template('testapp/login.html', error='メールアドレスが一致しません')
         current_user.mail = mail
-        db.session.commit()    
-    elif current_user.mail != mail:
+        db.session.commit()
+    else:
         return render_template('testapp/login.html', error='メールアドレスが一致しません')
     return redirect(url_for('get_status', current_user_id=current_user.id))
 
-@app.get('/top')
-def get_status():
-    user_id = request.json.get('user_id')
-    if user_id is not None:
+@app.route('/top/<current_user_id>')
+def get_status(current_user_id):
+    if current_user_id is not None:
         # Userテーブルからuser_idが一致するレコードを取得
-        user = User.query.filter_by(id=user_id).first()
+        current_user = User.query.filter_by(id=current_user_id).first()
+        print('--------check:get_status()--------')
+        print(f'current_user:{current_user}')
+        print('----------------')
         
         # HasSentテーブルからuser_idが一致するレコードを取得
-        has_sent = HasSent.query.filter_by(user_id=user_id).first()
+        has_sent = HasSent.query.filter_by(user_id=current_user_id).first()
         
-        if user:
+        if current_user:
             # userデータとhas_sentデータをレスポンスとして返す
             response_data = {
-                'user_id': user.id,
-                'name': user.name,
-                'has_pair': user.has_pair,
+                'current_user_id': current_user.id,
+                'current_user_name': current_user.name,
+                'has_pair': current_user.has_pair,
                 'has_sent': has_sent is not None  # has_sentレコードが存在するかどうか
             }
             return render_template('testapp/top.html', response_data=response_data)
         
 
-@app.get('/lottery')
-def get_lottery_page():
-    current_user_id = request.form.get('user_id')  # フォームデータからログインユーザーのIDを取得
+@app.route('/lottery/<int:current_user_id>')
+def get_lottery_page(current_user_id):
+    print('-------get_lottery_pageの確認---------')
+    print(current_user_id)
+    current_user_id = current_user_id
+    print('----------------')
     current_user = User.query.get(current_user_id)
     
     if current_user.has_pair:
@@ -118,14 +134,19 @@ def get_lottery_page():
     return render_template('testapp/lottery.html', current_user_id=current_user_id)
 
 
-@app.post('/lottery')
-def post_lottery_result():
-    current_user_id = request.form.get('user_id')  # フォームデータからログインユーザーのIDを取得
-    current_user = User.query.get(current_user_id)
+@app.post('/lottery/<int:current_user_id>')
+def post_lottery_result(current_user_id):
+    print('-------current_user_idの確認-------')
+    print(current_user_id)
+    print('----------------')
+    
+    current_user = User.query.filter_by(id=current_user_id).first()
     
     # ログインユーザーの性別に基づいて異性を探す
     target_gender = 'F' if current_user.gender == 'M' else 'M'
     available_partners = User.query.filter_by(gender=target_gender, has_pair=False).all()
+    print(f'target_gender: {target_gender}')
+    print(f'available_partners: {available_partners}')
     
     # ランダムに異性を選ぶ
     partner = random.choice(available_partners)
@@ -142,11 +163,10 @@ def post_lottery_result():
     # ペアをリザルトページに渡す
     return redirect(url_for('get_lottery_result', current_user_id=current_user.id))
 
-@app.get('/result')
-def get_lottery_result():
-    current_user_id = request.args.get('current_user_id')  # URLのクエリパラメータからcurrent_user_idを取得
+@app.get('/result/<int:current_user_id>')
+def get_lottery_result(current_user_id):
     # Pairingテーブルからcurrent_user_idをgiver_idとして持つレコードを検索
-    pairing = Pairing.query.get(Pairing.giver_id == current_user_id)
+    pairing = Pairing.query.filter_by(giver_id=current_user_id).first()
     
     if not pairing:
         # ペアリングが見つからない場合
@@ -160,4 +180,22 @@ def get_lottery_result():
         return render_template('error.html', message='Pair user not found')
     
     # 対応するペアのユーザーのnameとlikeを返却
-    return render_template('result.html', name=pair_user.name, like=pair_user.like)
+    return render_template('testapp/result.html', name=pair_user.name, like=pair_user.like, current_user_id=current_user_id)
+
+@app.post('/congratulation/<int:current_user_id>')
+def post_has_sent(current_user_id):
+    has_sent = HasSent(user_id=current_user_id)
+    db.session.add(has_sent)
+    db.session.commit()
+    return render_template('testapp/congratulation.html', current_user_id=current_user_id)
+
+@app.post('/congratulation/<int:current_user_id>/delete')
+def delete_has_sent(current_user_id):
+    has_sent_records =  HasSent.query.filter_by(user_id=current_user_id).all()
+    for has_sent_record in has_sent_records:
+        db.session.delete(has_sent_record)
+    db.session.commit()
+    print('----------------')
+    print('delete_has_sent')
+    print('----------------')
+    return redirect(url_for('get_status', current_user_id=current_user_id))

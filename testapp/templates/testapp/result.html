@@ -5,8 +5,8 @@
 <title>リザルトページ</title>
 </head>
 <body>
-    <h1>抽選結果</h1>
-    <p>男性: {{ male }}</p>
-    <p>女性: {{ female }}</p>
+    <p>わたす相手: {{ name }}</p>
+    <p>好み: {{ like }}</p>
+    <a href="{{ url_for('get_status', current_user_id=current_user_id)}}">top pageへ</a>
 </body>
 </html>

@@ -6,9 +6,8 @@
 </head>
 <body>
     <!-- 抽選ボタン -->
-    <form action="/lottery" method="post">
-        <input type="hidden" name="user_id" value="current_user_id_value">
-        <button type="submit">Draw Lottery</button>
-    </form>    
+    <form action="{{ url_for('post_lottery_result', current_user_id=current_user_id)}}" method="POST">
+        <button type="submit">draw</button>
+    </form>
 </body>
 </html>

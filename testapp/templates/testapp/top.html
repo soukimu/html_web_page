@@ -5,13 +5,31 @@
 <title>ボタン一覧</title>
 </head>
 <body>
+    <h1>こんにちは、{{response_data.current_user_name}}さん</h1>
+    {% if response_data.has_pair %}
+        <!-- わたす相手を確認する -->
+        <h1>渡す相手が決まっているよ</h1>
+        <a href="{{ url_for('get_lottery_result', current_user_id=response_data.current_user_id)}}">わたす相手を確認する</a>
+    {% else %}
     <!-- 抽選するボタン -->
-    <button onclick="location.href='/lottery'">抽選する</button>
+        <h1>わたす相手を決めてね</h1>
+        <a href="{{ url_for('get_lottery_page', current_user_id=response_data.current_user_id)}}">抽選する</a>
+    {% endif %}
 
-    <!-- 渡した報告ボタン -->
-    <button onclick="location.href='/reports/given'">渡した報告</button>
+    {% if response_data.has_sent %}
+        <!-- やっぱり渡してないボタン -->
+        <h1>素敵なプレゼントをありがとう！</h1>
+        <form action="{{ url_for('delete_has_sent', current_user_id=response_data.current_user_id)}}" method="POST">
+            <button type="submit">やっぱり渡してない!</button>
+        </form>
+    {% else %}
+        <!-- 渡した報告ボタン -->
+        <h1>相手に届けたかな？</h1>
+        <form action="{{ url_for('post_has_sent', current_user_id=response_data.current_user_id)}}" method="POST">
+            <button type="submit">わたしました！</button>
+        </form>
+    {% endif %}
 
-    <!-- もらった報告ボタン -->
-    <button onclick="location.href='/reports/received'">もらった報告</button>
+
 </body>
 </html>
