@@ -16,18 +16,20 @@
         <a href="{{ url_for('get_lottery_page', current_user_id=response_data.current_user_id)}}">抽選する</a>
     {% endif %}
 
-    {% if response_data.has_sent %}
-        <!-- やっぱり渡してないボタン -->
-        <h1>素敵なプレゼントをありがとう！</h1>
-        <form action="{{ url_for('delete_has_sent', current_user_id=response_data.current_user_id)}}" method="POST">
-            <button type="submit">やっぱり渡してない!</button>
-        </form>
-    {% else %}
-        <!-- 渡した報告ボタン -->
-        <h1>相手に届けたかな？</h1>
-        <form action="{{ url_for('post_has_sent', current_user_id=response_data.current_user_id)}}" method="POST">
-            <button type="submit">わたしました！</button>
-        </form>
+    {% if response_data.has_pair %}
+        {% if response_data.has_sent %}
+            <!-- やっぱり渡してないボタン -->
+            <h1>素敵なプレゼントをありがとう！</h1>
+            <form action="{{ url_for('delete_has_sent', current_user_id=response_data.current_user_id)}}" method="POST">
+                <button type="submit">やっぱり渡してない!</button>
+            </form>
+        {% else %}
+            <!-- 渡した報告ボタン -->
+            <h1>相手に届けたかな？</h1>
+            <form action="{{ url_for('post_has_sent', current_user_id=response_data.current_user_id)}}" method="POST">
+                <button type="submit">わたしました！</button>
+            </form>
+        {% endif %}
     {% endif %}
 
 
