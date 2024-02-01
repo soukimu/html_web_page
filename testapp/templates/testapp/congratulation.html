@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
+<body style="width:100vw; height:100vh;">
     <div id="congCont"><h1>Congratulation!!</h1></div>
     <a href="{{url_for('get_status', current_user_id=current_user_id)}}">トップページへ</a>
     <script type="text/javascript">
-        document.getElementsByTagName("html")[0].addEventListener("onclick",function(){
+        document.body.onclick = function ( event ) {
             document.getElementById("congCont").innerHTML += "<h1>Congratulation!!</h1>";
-        },false);
+        }
     </script>
 </body>
 </html>
