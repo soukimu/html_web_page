@@ -6,7 +6,12 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Congratulation!!</h1>
+    <div id="congCont"><h1>Congratulation!!</h1></div>
     <a href="{{url_for('get_status', current_user_id=current_user_id)}}">トップページへ</a>
+    <script type="text/javascript">
+        document.getElementsByTagName("html")[0].addEventListener("onclick",function(){
+            document.getElementById("congCont").innerHTML += "<h1>Congratulation!!</h1>";
+        },false);
+    </script>
 </body>
 </html>
