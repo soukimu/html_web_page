@@ -14,7 +14,7 @@
     <main class="w-max h-max">
         <form action="{{ url_for('post_lottery_result', current_user_id=current_user_id)}}" method="POST" id="letter-form">
             <input type="submit" id="submit" name="LotterySubmit" value="1" class="d-none">
-            <label for="submit" id="label" class="mx-auto cursor-pointer" style="width: 90vw; height: 112.5vw;max-width: 64vh; max-height: 80vh; box-sizing: border-box;" onclick="document.getElementById('submit').click();">
+            <label for="submit" id="label" class="mx-auto cursor-pointer" style="width: 90vw; height: 112.5vw;max-width: 64vh; max-height: 80vh; box-sizing: border-box;" onclick="document.getElementById('submit').click();　document.getElementById('submit').disabled = true;">
                 <img src="{{url_for('static', filename='img/letter/letter.webp')}}" alt="" class="w-100">
             </label>
         </form>
