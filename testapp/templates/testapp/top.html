@@ -1,40 +1,152 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="UTF-8">
-<title>ボタン一覧</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>ばれんたいん2024</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/base.css')}}" />
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/main.css')}}" />
 </head>
+
 <body>
-    <h1>こんにちは、{{response_data.current_user_name}}さん</h1>
-    <h1>あなたの好みを教えてね</h1>
-    <a href="{{url_for('get_likes', current_user_id=response_data.current_user_id)}}">教える</a>
+    <header></header>
+    <main class="w-max h-max">
+        <div action="" id="login-form">
+            <h2 class="w-17rem mt-1rem mx-auto bc-transparent color-primary text-align-center font-weight-unset">
+                こんにちは、{{response_data.current_user_name}}さん</h2>
 
-    {% if response_data.has_target_user %}
-        <!-- わたす相手を確認する -->
-        <h1>渡す相手が決まっているよ</h1>
-        <a href="{{ url_for('get_lottery_result', current_user_id=response_data.current_user_id)}}">わたす相手を確認する</a>
-    {% else %}
-    <!-- 抽選するボタン -->
-        <h1>わたす相手を決めてね</h1>
-        <a href="{{ url_for('get_lottery_page', current_user_id=response_data.current_user_id)}}">抽選する</a>
-    {% endif %}
+            {% if response_data.has_target_user %}
+            <span class="w-17rem mt-05rem mx-auto bc-transparent color-primary text-align-center">渡す相手が決まっているよ</span>
+            <a href="{{ url_for('get_lottery_result', current_user_id=response_data.current_user_id)}}" class="d-flex">
+                <input type="submit" name="CheckSubmit" value="確認する"
+                    class="submit w-17rem mt-05rem mx-auto p-05rem bc-transparent border-round-05rem color-primary cursor-pointer"
+                    style="color: rgb(0, 186, 0);">
+            </a>
+            {% else %}
+            <span class="w-17rem mt-05rem mx-auto bc-transparent color-primary text-align-center">わたす相手を決めてね</span>
+            <a href="{{ url_for('get_lottery_page', current_user_id=response_data.current_user_id)}}"
+                class="d-flex"></a>
+            <input type="submit" name="LotterySubmit" value="抽選する"
+                class="submit w-17rem mt-05rem mx-auto p-05rem bc-transparent border-round-05rem color-primary cursor-pointer"
+                style="color: rgb(0, 186, 0);">
+            </a>
+            {% endif %}
 
-    {% if response_data.has_target_user %}
-        {% if response_data.has_sent %}
-            <!-- やっぱり渡してないボタン -->
-            <h1>素敵なプレゼントをありがとう！</h1>
-            <form action="{{ url_for('delete_has_sent', current_user_id=response_data.current_user_id)}}" method="POST">
-                <button type="submit">やっぱり渡してない!</button>
+            <br>
+
+            {% if response_data.has_target_user %}
+            {% if response_data.has_sent %}
+            <span class="w-17rem mt-1rem mx-auto bc-transparent color-primary text-align-center">素敵なプレゼントをありがとう！</span>
+            <form action="{{ url_for('delete_has_sent', current_user_id=response_data.current_user_id)}}" method="POST" class="d-flex">
+                <input type="submit" name="notSendSubmit" value="やっぱり渡してない！"
+                    class="submit w-17rem my-05rem mx-auto p-05rem bc-transparent border-round-05rem color-primary cursor-pointer"
+                    style="color: rgb(0, 186, 0);">
             </form>
-        {% else %}
-            <!-- 渡した報告ボタン -->
-            <h1>相手に届けたかな？</h1>
-            <form action="{{ url_for('post_has_sent', current_user_id=response_data.current_user_id)}}" method="POST">
-                <button type="submit">わたしました！</button>
+            {% else %}
+            <span class="w-17rem mt-1rem mx-auto bc-transparent color-primary text-align-center">相手に届けたかな？</span>
+            <form action="{{ url_for('post_has_sent', current_user_id=response_data.current_user_id)}}" method="POST" class="d-flex">
+                <input type="submit" name="sendSubmit" value="送った！"
+                    class="submit w-17rem my-05rem mx-auto p-05rem bc-transparent border-round-05rem color-primary cursor-pointer"
+                    style="color: rgb(0, 186, 0);">
             </form>
-        {% endif %}
-    {% endif %}
+            {% endif %}
+            {% endif %}
+        </div>
+        <div id="bg-img" class="w-200vw h-200vh flex-col overflow-hidden" style="font-size: 0px;"></div>
 
+    </main>
+    <footer></footer>
 
+    <script type="text/javascript">
+        var bgImg = document.getElementById("bg-img");
+        bgImg.style.width = Math.ceil(2 * window.innerWidth / 400) * 400 + "px";
+        bgImg.style.height = Math.ceil(2 * window.innerHeight / 400) * 400 + "px";
+
+        let loopNumW = Math.ceil(parseInt(bgImg.style.width) / 400);
+        let loopNumH = Math.ceil(parseInt(bgImg.style.height) / 400);
+
+        for (let i = 0; i < loopNumH; i++) {
+            let d = document.createElement('div');
+            d.setAttribute('class', "imgRowCont flex-row overflow-hidden");
+            for (let j = 0; j < loopNumW; j++) {
+                d.innerHTML += getImgStr();
+            }
+            bgImg.appendChild(d);
+        }
+
+        let imgWCount = loopNumW;
+        let imgHCount = loopNumH;
+
+        function getImgStr() {
+            if(Math.random() < 0.01){
+                return `<img src="{{url_for('static', filename='img/page02-sp01.webp')}}" alt="" width="400" height="400" fetchpriority="high">`;
+            }
+            else{
+                return `<img src="{{url_for('static', filename='img/page02.webp')}}" alt="" width="400" height="400" fetchpriority="high">`;
+            }
+        }
+
+        function addingRow(numOfadding, direction) {
+            let imgRowConts = document.getElementsByClassName("imgRowCont");
+            for (let i = 0; i < imgRowConts.length; i++) {
+                let loopNumW2 = Math.ceil(parseFloat(bgImg.style.width) / 400) - imgWCount;
+                for (let j = 0; j < numOfadding; j++) {
+                    if (direction >= 0) {
+                        imgRowConts[i].innerHTML += getImgStr();
+                    }
+                    else {
+                        imgRowConts[i].innerHTML = getImgStr() + imgRowConts[i].innerHTML;
+                    }
+                }
+            }
+            if (direction < 0) {
+                scrollBy(400 * numOfadding, 0);
+            };
+
+            bgImg.style.width = parseFloat(bgImg.style.width) + 400 + "px";
+        }
+        function addingCol(numOfadding, direction) {
+            let imgRowConts = document.getElementsByClassName("imgRowCont");
+            for (let i = 0; i < numOfadding; i++) {
+                let d = document.createElement('div');
+                d.setAttribute('class', "imgRowCont flex-row overflow-hidden");
+                for (let j = 0; j < imgRowConts[0].children.length; j++) {
+                    d.innerHTML += getImgStr();
+                }
+                if (direction >= 0) {
+                    bgImg.appendChild(d);
+                }
+                else {
+                    bgImg.prepend(d);
+                }
+            }
+            if (direction < 0) {
+                scrollBy(0, 400 * numOfadding);
+            };
+
+            bgImg.style.height = parseFloat(bgImg.style.height) + 400 + "px";
+        }
+        window.addEventListener("scroll", function () {
+            let bgSize = { width: parseFloat(bgImg.style.width), height: parseFloat(bgImg.style.height) };
+            let offSet = { X: window.pageXOffset, Y: window.pageYOffset };
+
+            if (offSet.X < 400) {
+                addingRow(1, -1);
+            }
+            if (offSet.Y < 400) {
+                addingCol(1, -1);
+            }
+            if (bgSize.width - (offSet.X + window.innerWidth) < 400) {
+                addingRow(1, 1);
+                console.log(1);
+            }
+            if (bgSize.height - (offSet.Y + window.innerHeight) < 400) {
+                addingCol(1, 1);
+                console.log(2);
+            }
+        }, false);
+    </script>
 </body>
+
 </html>

@@ -182,13 +182,14 @@ def get_lottery_result(current_user_id):
 
     # current_user_idがgiverならreceiverを取得、receiverならgiverを取得
     pair_user = User.query.get(pairing.receiver_id)
+    current_user = User.query.get(current_user_id)
     
     if not pair_user:
         # 対応するペアのユーザーが見つからない場合
         return render_template('error.html', message='Pair user not found')
     
     # 対応するペアのユーザーのnameとlikeを返却
-    return render_template('testapp/result.html', name=pair_user.name, like=pair_user.like, current_user_id=current_user_id)
+    return render_template('testapp/result.html', name=pair_user.name, like=pair_user.like,current_user=current_user ,current_user_id=current_user_id)
 
 @app.post('/congratulation/<int:current_user_id>')
 def post_has_sent(current_user_id):

@@ -1,13 +1,120 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="UTF-8">
-<title>抽選ページ</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>ばれんたいん2024</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/base.css')}}" />
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/main.css')}}" />
 </head>
+
 <body>
-    <!-- 抽選ボタン -->
-    <form action="{{ url_for('post_lottery_result', current_user_id=current_user_id)}}" method="POST">
-        <button type="submit">draw</button>
-    </form>
+    <header></header>
+    <main class="w-max h-max">
+        <form action="{{ url_for('post_lottery_result', current_user_id=current_user_id)}}" method="POST" id="letter-form">
+            <input type="submit" id="submit" name="LotterySubmit" value="1" class="d-none">
+            <label for="submit" id="label" class="mx-auto cursor-pointer" style="width: 90vw; height: 112.5vw;max-width: 64vh; max-height: 80vh; box-sizing: border-box;" onclick="document.getElementById('submit').click();">
+                <img src="{{url_for('static', filename='img/letter/letter.webp')}}" alt="" class="w-100">
+            </label>
+        </form>
+        <div id="bg-img" class="w-200vw h-200vh flex-col overflow-hidden" style="font-size: 0px;"></div>
+
+    </main>
+    <footer></footer>
+
+    <script type="text/javascript">
+        var bgImg = document.getElementById("bg-img");
+        bgImg.style.width = Math.ceil(2 * window.innerWidth / 400) * 400 + "px";
+        bgImg.style.height = Math.ceil(2 * window.innerHeight / 400) * 400 + "px";
+
+        let loopNumW = Math.ceil(parseInt(bgImg.style.width) / 400);
+        let loopNumH = Math.ceil(parseInt(bgImg.style.height) / 400);
+
+        for (let i = 0; i < loopNumH; i++) {
+            let d = document.createElement('div');
+            d.setAttribute('class', "imgRowCont flex-row overflow-hidden");
+            for (let j = 0; j < loopNumW; j++) {
+                d.innerHTML += getImgStr();
+            }
+            bgImg.appendChild(d);
+        }
+
+        let imgWCount = loopNumW;
+        let imgHCount = loopNumH;
+
+        function getImgStr() {
+            if(Math.random() < 0.01){
+                return `<img src="{{url_for('static', filename='img/page01-sp01.webp')}}" alt="" width="400" height="400" fetchpriority="high">`;
+            }
+            else{
+                return `<img src="{{url_for('static', filename='img/page01.webp')}}" alt="" width="400" height="400" fetchpriority="high">`;
+            }
+        }
+
+        function addingRow(numOfadding, direction) {
+            let imgRowConts = document.getElementsByClassName("imgRowCont");
+            for (let i = 0; i < imgRowConts.length; i++) {
+                let loopNumW2 = Math.ceil(parseFloat(bgImg.style.width) / 400) - imgWCount;
+                for (let j = 0; j < numOfadding; j++) {
+                    if (direction >= 0) {
+                        imgRowConts[i].innerHTML += getImgStr();
+                    }
+                    else {
+                        imgRowConts[i].innerHTML = getImgStr() + imgRowConts[i].innerHTML;
+                    }
+                }
+            }
+            if (direction < 0) {
+                scrollBy(400 * numOfadding, 0);
+            };
+
+            bgImg.style.width = parseFloat(bgImg.style.width) + 400 + "px";
+        }
+        function addingCol(numOfadding, direction) {
+            let imgRowConts = document.getElementsByClassName("imgRowCont");
+            for (let i = 0; i < numOfadding; i++) {
+                let d = document.createElement('div');
+                d.setAttribute('class', "imgRowCont flex-row overflow-hidden");
+                for (let j = 0; j < imgRowConts[0].children.length; j++) {
+                    d.innerHTML += getImgStr();
+                }
+                if (direction >= 0) {
+                    bgImg.appendChild(d);
+                }
+                else {
+                    bgImg.prepend(d);
+                }
+            }
+            if (direction < 0) {
+                scrollBy(0, 400 * numOfadding);
+            };
+
+            bgImg.style.height = parseFloat(bgImg.style.height) + 400 + "px";
+        }
+        window.addEventListener("scroll", function () {
+            let bgSize = { width: parseFloat(bgImg.style.width), height: parseFloat(bgImg.style.height) };
+            let offSet = { X: window.pageXOffset, Y: window.pageYOffset };
+
+            if (offSet.X < 400) {
+                addingRow(1, -1);
+            }
+            if (offSet.Y < 400) {
+                addingCol(1, -1);
+            }
+            if (bgSize.width - (offSet.X + window.innerWidth) < 400) {
+                addingRow(1, 1);
+                console.log(1);
+            }
+            if (bgSize.height - (offSet.Y + window.innerHeight) < 400) {
+                addingCol(1, 1);
+                console.log(2);
+            }
+
+            // document.getElementById("login-form").style.top = offSet.Y+"px";
+            // document.getElementById("login-form").style.left = offSet.X+"px";
+        }, false);
+    </script>
 </body>
+
 </html>
